@@ -10,7 +10,7 @@ Companion repository for **The Cinematic Web: Scroll-Driven Web Design with Clau
 | Folder | Contents |
 |---|---|
 | `sample/` | Chapter 3, *The twelve scroll patterns*, free to read. |
-| `examples/bindery/` | The worked example from chapter 6: a pinned hero for a fictional bindery, one self-contained HTML file with the mobile, reduced-motion and no-JS states built in. (Arriving with the 1.1 update.) |
+| `examples/bindery/` | The worked example from chapter 6: a pinned hero for a fictional bindery, one self-contained HTML file with the mobile, reduced-motion and no-JS states built in. Live: https://mustbesimo.github.io/the-cinematic-web/examples/bindery/ |
 
 ## Licence
 

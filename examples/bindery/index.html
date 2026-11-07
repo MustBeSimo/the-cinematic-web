@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quire &amp; Thread · Every book can be bound again</title>
+<meta name="description" content="Quire &amp; Thread is a fictional bindery: the worked example from chapter 6 of The Cinematic Web. A pinned hero whose plate pushes in on a spine under repair, then one chapter laid over it like a sheet of paper.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;family=IBM+Plex+Mono:wght@400&amp;display=swap">
+<style>
+/* ── token contract ───────────────────────────────────────────────────────
+   Source: themes/warm-scrapbook.theme.json (bg, surface, fg, fg-dim, line).
+   Adapted for a bindery: the theme's soft accent becomes --accent-soft, and
+   the working accent is madder, the colour of old book cloth. Every rule below
+   references these roles; restyling the page means editing this block only. */
+:root{
+  --bg:#F5F0E8; --surface:#FBF7F0; --paper:#FBF7F0; --fg:#3A322C; --fg-dim:#6E6358;
+  --accent:#8A3527; --accent-soft:#E8927C; --line:rgba(58,50,44,.18); --shadow:#3A322C;
+  --wash-hi:#FBF6EC; --wash-mid:#EFE5D3; --wash-lo:#E2D3B8; --grade-ink:rgba(43,32,26,.34); --grade-deep:rgba(43,32,26,.58); --mark:rgba(58,50,44,.4); --scrim:rgba(245,240,232,.62);
+  --font-display:'EB Garamond','Iowan Old Style',Palatino,Georgia,serif;
+  --font-ui:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --curve-reveal:cubic-bezier(.16,1,.3,1); --curve-exit:cubic-bezier(.7,0,.84,0); --curve-settle:cubic-bezier(.34,1.32,.64,1);
+  --dur-fast:280ms; --dur-base:520ms; --dur-slow:900ms;
+  --gutter:clamp(20px,5vw,72px); --space-sm:12px; --space-md:16px; --space-lg:24px; --space-xl:36px; --space-2xl:56px; --space-4xl:112px;
+  --size-caption:clamp(.68rem,.2vw + .62rem,.78rem); --size-body:clamp(1.05rem,.35vw + .95rem,1.2rem); --size-lead:clamp(1.15rem,1.1vw + .8rem,1.45rem);
+  --fluid-h1:clamp(2.7rem,6.6vw,6.2rem); --fluid-h2:clamp(2rem,3.9vw,3.4rem); --fluid-h3:clamp(1.3rem,1.8vw,1.6rem);
+  --measure:40ch; --scroll:0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-display);font-size:var(--size-body);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--accent);color:var(--paper)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+a{color:inherit}
+h1,h2,h3{font-weight:400;letter-spacing:-.015em;line-height:1.04;text-wrap:balance}
+h1 em,h2 em{font-style:italic;color:var(--accent)}
+.skip{position:absolute;left:var(--gutter);top:-60px;background:var(--fg);color:var(--paper);padding:10px 16px;font-family:var(--font-ui);font-size:var(--size-caption);z-index:60}
+.skip:focus{top:12px}
+.eyebrow{font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.22em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg)}
+.eyebrow::before{content:"";width:32px;height:1px;background:currentColor}
+.lead{font-size:var(--size-lead);line-height:1.4;font-style:italic;color:var(--fg-dim);max-width:var(--measure)}
+
+/* progress: a single hairline that fills with the scroll (transform only) */
+.progress{position:fixed;top:0;left:0;right:0;height:2px;background:var(--accent);transform-origin:0 50%;transform:scaleX(var(--scroll));z-index:55}
+
+/* masthead */
+.masthead{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-lg);
+  padding:calc(var(--space-lg) + env(safe-area-inset-top)) var(--gutter) var(--space-lg);font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.2em;text-transform:uppercase;color:var(--fg-dim);
+  background:color-mix(in srgb,var(--bg) 94%,transparent);border-bottom:1px solid var(--line)}
+.masthead strong{color:var(--fg);font-weight:400;letter-spacing:.3em}
+.masthead a{text-decoration:none;border-bottom:1px solid var(--line);padding:12px 0 2px;min-height:44px;display:inline-flex;align-items:flex-end}
+@media (hover:hover){.masthead a:hover{color:var(--accent);border-color:var(--accent)}}
+
+/* ── HERO: default is the static composition (no JS, reduced motion, touch) ── */
+.hero{position:relative}
+.hero-pin{position:relative}
+.stage{position:relative;height:clamp(420px,62svh,760px);overflow:hidden;background:var(--bg)}
+.far,.plate,.grade,.marks{position:absolute;inset:0}
+.far{background:radial-gradient(120% 90% at 60% 30%,var(--wash-hi) 0%,var(--wash-mid) 55%,var(--wash-lo) 100%)}
+.far::after{content:"";position:absolute;inset:0;opacity:.32;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .23 0 0 0 0 .2 0 0 0 0 .17 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+.plate svg{width:100%;height:100%;display:block}
+.plate{transform-origin:58% 40%}
+.grade{background:linear-gradient(180deg,transparent 30%,var(--grade-ink) 78%,var(--grade-deep));opacity:.35}
+.marks{pointer-events:none}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--scrim) 0%,var(--scrim) 22%,transparent 46%)}
+.marks .cap{position:absolute;right:var(--gutter);bottom:var(--space-lg);font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.14em;color:var(--paper);text-transform:uppercase}
+.marks .reg{position:absolute;width:22px;height:22px;border-top:1px solid var(--mark);border-left:1px solid var(--mark)}
+.marks .r1{top:calc(var(--space-2xl) + 40px);left:var(--gutter)}
+.marks .r2{top:calc(var(--space-2xl) + 40px);right:var(--gutter);transform:scaleX(-1)}
+
+.headline{position:relative;padding:var(--space-2xl) var(--gutter) 0;max-width:calc(560px + var(--gutter) * 2)}
+.headline h1{font-size:var(--fluid-h1);margin-bottom:var(--space-lg)}
+.ln{display:block;overflow:hidden;padding-bottom:.06em}
+.wd{display:inline-block}
+.cue{margin-top:var(--space-lg);font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.24em;text-transform:uppercase;color:var(--fg-dim);display:flex;align-items:center;gap:var(--space-sm);transition:opacity var(--dur-base) var(--curve-exit)}
+.cue i{display:block;width:34px;height:1px;background:var(--accent);transform-origin:0 50%;animation:cue 2.4s var(--curve-reveal) infinite}
+@keyframes cue{0%,100%{transform:scaleX(.3);opacity:.5}50%{transform:scaleX(1);opacity:1}}
+.scrolled .cue{opacity:0}
+
+/* the sheet: chapter I, laid over the plate */
+.sheet{position:relative;margin:calc(var(--space-2xl) * -1 + 8px) var(--gutter) 0;background:var(--paper);padding:clamp(28px,4vw,56px);
+  max-width:640px;box-shadow:0 28px 64px color-mix(in srgb,var(--shadow) 22%,transparent),0 1px 3px color-mix(in srgb,var(--shadow) 14%,transparent)}
+.headline + .sheet{margin-top:var(--space-2xl)}
+.sheet h2{font-size:var(--fluid-h2);margin-bottom:var(--space-lg)}
+.sheet .rule{height:1px;background:var(--fg);opacity:.5;margin:0 0 var(--space-lg);transform-origin:0 50%}
+.sheet p{max-width:var(--measure)}
+.sheet ul{list-style:none;margin-top:var(--space-lg);display:grid;gap:var(--space-sm);font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-dim)}
+.sheet li{display:flex;gap:var(--space-sm);align-items:baseline}
+.sheet li::before{content:"";flex:0 0 14px;height:1px;background:var(--accent);transform:translateY(-3px)}
+
+/* JS-only entrance: words rise out of their line masks. Default state is visible,
+   and the animation fills forwards, so a script that dies later never hides text. */
+.js .wd{animation:rise var(--dur-slow) var(--curve-reveal) both;animation-delay:calc(var(--i) * 70ms + 120ms)}
+@keyframes rise{from{transform:translateY(108%)}to{transform:none}}
+
+/* in-flow reveals, gated on JS + IntersectionObserver (class added by script) */
+.js-reveal .sheet .reveal:not(.in){opacity:0;transform:translateY(22px)}
+.sheet .reveal{transition:opacity var(--dur-base) var(--curve-reveal),transform var(--dur-slow) var(--curve-reveal)}
+.js-reveal .sheet .rule.reveal:not(.in){transform:scaleX(0);opacity:0}
+
+@media (min-width:768px){
+  .stage{height:min(88vh,860px)}
+  .headline{position:absolute;top:0;left:0;padding-top:clamp(96px,18vh,180px)}
+  .stage + .headline{position:absolute}
+  .sheet{margin-top:-14vh;margin-left:var(--gutter)}
+}
+
+/* ── PINNED (desktop, fine pointer, motion allowed; class set by script) ──── */
+.is-pinned .hero{height:300vh}
+.is-pinned .hero-pin{position:sticky;top:0;height:100vh;overflow:hidden;perspective:1200px;
+  --d:clamp(0,calc(var(--p,0) / .5),1);
+  --lift:clamp(0,calc((var(--p,0) - .08) / .3),1);
+  --s:clamp(0,calc((var(--p,0) - .42) / .2),1)}
+.is-pinned .stage{position:absolute;inset:0;height:auto}
+/* atmospheric far layer: the slowest drift (depth .15) */
+.is-pinned .far{transform:translate3d(0,calc(var(--d) * -2vh),0) scale(calc(1 + var(--d) * .03))}
+/* DOLLY-IN: the plate pushes toward the spine; a 3deg tilt gives the camera weight (depth .75) */
+.is-pinned .plate{transform:translate3d(0,calc(var(--d) * -3vh),0) scale(calc(1.02 + var(--d) * .26)) rotateX(calc(var(--d) * 3deg));will-change:transform}
+/* GRADE CHANGE: the light drops as we get closer (opacity only, never a filter) */
+.is-pinned .grade{opacity:calc(.3 + var(--d) * .45)}
+/* FOREGROUND PARALLAX: plate marks travel faster than the plate (depth 1.2) */
+.is-pinned .marks{transform:translate3d(0,calc(var(--d) * -7vh),0);opacity:calc(1 - var(--d) * .7)}
+/* CRANE UP: the headline lifts out early so the plate can speak (depth 1.0) */
+.is-pinned .headline{position:absolute;top:0;left:0;padding-top:clamp(110px,18vh,190px);transform:translate3d(0,calc(var(--lift) * -16vh),0);opacity:calc(1 - var(--lift));will-change:transform,opacity}
+/* INSERT SHOT: the chapter is laid into frame like a sheet on the bench, then holds still */
+.is-pinned .sheet{position:absolute;left:var(--gutter);bottom:6vh;margin:0;width:min(620px,48vw);max-height:84vh;overflow:auto;
+  transform:translate3d(0,calc((1 - var(--s)) * (100% + 14vh)),0) rotate(calc((1 - var(--s)) * -1.4deg));will-change:transform}
+.is-pinned .sheet .reveal{transition:none;opacity:var(--e);transform:translateY(calc((1 - var(--e)) * 18px))}
+.is-pinned .sheet .e1{--e:clamp(0,calc((var(--s) - .35) / .3),1)}
+.is-pinned .sheet .e2{--e:clamp(0,calc((var(--s) - .5) / .3),1)}
+.is-pinned .sheet .rule.reveal{transform:scaleX(var(--e))}
+.is-pinned .sheet .e3{--e:clamp(0,calc((var(--s) - .62) / .3),1)}
+.is-pinned .sheet .e4{--e:clamp(0,calc((var(--s) - .74) / .26),1)}
+
+/* ── chapters in flow ───────────────────────────────────────────────────── */
+.chapter{max-width:1240px;margin:0 auto;padding:var(--space-4xl) var(--gutter)}
+.chapter h2{font-size:var(--fluid-h2);max-width:18ch;margin-bottom:var(--space-lg)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-xl);margin-top:var(--space-2xl)}
+.card{background:var(--surface);padding:var(--space-xl);border-top:5px solid var(--accent);box-shadow:0 18px 44px color-mix(in srgb,var(--shadow) 14%,transparent);
+  transform:rotate(var(--r,0deg));transition:transform var(--dur-slow) var(--curve-settle),opacity var(--dur-base) var(--curve-reveal)}
+.card:nth-child(1){--r:-.8deg}.card:nth-child(2){--r:.5deg}.card:nth-child(3){--r:-.3deg}
+.card .n{font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.18em;color:var(--fg-dim)}
+.card h3{font-size:var(--fluid-h3);margin:var(--space-sm) 0}
+.card p{color:var(--fg-dim)}
+/* SETTLE: cards are laid down on the bench, a little crooked, once */
+.js-reveal .card:not(.in){opacity:0;transform:translateY(26px) rotate(calc(var(--r,0deg) * -3))}
+
+.send{border-top:1px solid var(--line)}
+.steps{list-style:none;counter-reset:s;display:grid;gap:var(--space-xl);margin-top:var(--space-2xl);max-width:760px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:3.2rem 1fr;gap:var(--space-md);align-items:baseline;transition:transform var(--dur-slow) var(--curve-reveal),opacity var(--dur-base) var(--curve-reveal)}
+.steps li::before{content:counter(s,upper-roman);font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.2em;color:var(--accent)}
+.steps strong{font-weight:500;display:block;font-size:var(--fluid-h3);line-height:1.2}
+.steps span{color:var(--fg-dim)}
+/* TRACKING SHOT: steps slide in from the margin, one after another */
+.js-reveal .steps li:not(.in){opacity:0;transform:translateX(-28px)}
+.button{display:inline-flex;align-items:center;min-height:48px;margin-top:var(--space-2xl);padding:0 28px;background:var(--fg);color:var(--paper);text-decoration:none;
+  font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.2em;text-transform:uppercase;transition:transform var(--dur-fast) var(--curve-settle),background-color var(--dur-fast) var(--curve-reveal)}
+@media (hover:hover){.button:hover{background:var(--accent);transform:translateY(-2px)}}
+.button:active{transform:translateY(1px)}
+footer{border-top:1px solid var(--line);padding:var(--space-2xl) var(--gutter) calc(var(--space-2xl) + env(safe-area-inset-bottom));display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-md);
+  font-family:var(--font-ui);font-size:var(--size-caption);letter-spacing:.1em;color:var(--fg-dim)}
+
+@media (max-width:860px){
+  .cards{grid-template-columns:1fr}
+  .masthead span{display:none}
+}
+
+/* ── reduced motion: nothing pins, nothing scrubs, everything already in place ── */
+@media (prefers-reduced-motion:reduce){
+  .js .wd{animation:none}
+  .cue i{animation:none;transform:none}
+  .progress{display:none}
+  .plate{transform:none!important}
+  .js-reveal .reveal:not(.in),.js-reveal .card:not(.in),.js-reveal .steps li:not(.in){opacity:1;transform:none}
+  .card,.steps li,.button,.sheet .reveal,.cue{transition:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+
+<nav class="masthead" aria-label="Quire and Thread">
+  <strong>Quire &amp; Thread</strong>
+  <span>Bindery · restoration by hand</span>
+  <a href="#send">Send a book</a>
+</nav>
+
+<main id="main">
+<section class="hero" data-track aria-labelledby="h-hero">
+  <div class="hero-pin">
+    <div class="stage">
+      <div class="far" aria-hidden="true"></div>
+      <div class="plate" role="img" aria-label="A plate of a book standing on a bindery bench, its spine cloth peeled back to show the old lining and sewing, with a spool of linen thread, a needle, a bone folder and a paste brush beside it.">
+        <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4EDE0"/><stop offset="1" stop-color="#E4D6BE"/></linearGradient>
+            <linearGradient id="bench" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CDB596"/><stop offset="1" stop-color="#A3855F"/></linearGradient>
+            <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#561F17"/><stop offset=".32" stop-color="#8A3527"/><stop offset=".52" stop-color="#9E4532"/><stop offset=".78" stop-color="#7A2E22"/><stop offset="1" stop-color="#4A1A13"/></linearGradient>
+            <linearGradient id="lining" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D6C4A2"/><stop offset=".5" stop-color="#EADCC0"/><stop offset="1" stop-color="#CDBA95"/></linearGradient>
+            <radialGradient id="pool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#3A322C" stop-opacity=".26"/><stop offset="1" stop-color="#3A322C" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="1600" height="620" fill="url(#wall)"/>
+          <rect y="620" width="1600" height="380" fill="url(#bench)"/>
+          <path d="M0 620H1600" stroke="#6B5440" stroke-opacity=".35" stroke-width="2"/>
+          <g fill="none" stroke="#5E4835" stroke-opacity=".12" stroke-width="1.5">
+            <path d="M0 668C380 660 880 678 1600 664"/><path d="M0 724C420 716 940 736 1600 718"/><path d="M0 790C360 780 980 806 1600 784"/><path d="M0 862C500 850 1020 876 1600 856"/><path d="M0 940C440 930 1060 952 1600 934"/>
+          </g>
+          <!-- the book, standing; spine to camera -->
+          <ellipse cx="940" cy="646" rx="200" ry="22" fill="url(#pool)"/>
+          <path d="M820 170H1000L1052 148H872Z" fill="#F3EAD7" stroke="#B9A988" stroke-width="1.5"/>
+          <g stroke="#CDBE9F" stroke-width="1" fill="none"><path d="M836 166H1004"/><path d="M852 160H1018"/><path d="M866 154H1032"/></g>
+          <path d="M1000 170L1052 148V624L1000 642Z" fill="#5A2119"/>
+          <path d="M1000 170V642" stroke="#3A1510" stroke-width="2"/>
+          <rect x="820" y="172" width="180" height="160" fill="url(#lining)"/>
+          <g stroke="#9A8B72" stroke-width="1.6" fill="none" stroke-linecap="round">
+            <path d="M828 196H992" stroke-dasharray="10 12"/>
+            <path d="M828 230H992" stroke="#B7A684" stroke-width="7"/><path d="M836 225l8 10M864 225l8 10M892 225l8 10M920 225l8 10M948 225l8 10M976 225l8 10"/>
+            <path d="M828 292H992" stroke="#B7A684" stroke-width="7"/><path d="M836 287l8 10M864 287l8 10M892 287l8 10M920 287l8 10M948 287l8 10M976 287l8 10"/>
+          </g>
+          <g fill="#BFA97F" fill-opacity=".35"><ellipse cx="868" cy="262" rx="22" ry="8"/><ellipse cx="952" cy="318" rx="30" ry="7"/></g>
+          <path d="M820 330H1000V630Q910 652 820 630Z" fill="url(#cloth)"/>
+          <g>
+            <rect x="820" y="396" width="180" height="13" rx="6.5" fill="#61241A"/><path d="M824 397H996" stroke="#B5573F" stroke-opacity=".7"/>
+            <rect x="820" y="486" width="180" height="13" rx="6.5" fill="#61241A"/><path d="M824 487H996" stroke="#B5573F" stroke-opacity=".7"/>
+            <rect x="820" y="566" width="180" height="13" rx="6.5" fill="#61241A"/><path d="M824 567H996" stroke="#B5573F" stroke-opacity=".7"/>
+            <rect x="846" y="418" width="128" height="54" fill="#4A1A13"/>
+            <path d="M852 424H968M852 466H968" stroke="#B8955A" stroke-width="1.5"/><path d="M890 445H930" stroke="#B8955A" stroke-width="1.2"/>
+          </g>
+          <!-- the lifted cloth, folded back to the left on its hinge -->
+          <path d="M820 172V330C786 324 752 306 736 280C716 246 720 204 744 184C766 168 794 166 820 172Z" fill="#D9C39C" stroke="#8A3527" stroke-width="2"/>
+          <path d="M744 184C738 214 742 254 762 286" stroke="#B39B72" stroke-width="1.2" fill="none"/>
+          <path d="M820 330C786 324 752 306 736 280" stroke="#5A2119" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <!-- thread spool, needle, loose thread -->
+          <ellipse cx="1200" cy="704" rx="62" ry="9" fill="url(#pool)"/>
+          <rect x="1168" y="640" width="64" height="60" fill="#EFE7D6"/>
+          <g stroke="#CFC4AE" stroke-width="1.4"><path d="M1170 650H1230M1170 660H1230M1170 670H1230M1170 680H1230M1170 690H1230"/></g>
+          <ellipse cx="1200" cy="640" rx="40" ry="10" fill="#B9A27C"/><ellipse cx="1200" cy="700" rx="40" ry="10" fill="#9E8661"/>
+          <path d="M1230 674C1290 700 1292 752 1222 764C1150 776 1102 748 1122 696" fill="none" stroke="#F4EEDF" stroke-width="3"/>
+          <path d="M1230 674C1290 700 1292 752 1222 764C1150 776 1102 748 1122 696" fill="none" stroke="#9A8B72" stroke-width="1" stroke-opacity=".6"/>
+          <path d="M1060 712L1130 694" stroke="#7F786A" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="1124" cy="695.5" rx="4" ry="1.6" fill="none" stroke="#7F786A"/>
+          <!-- bone folder -->
+          <path d="M1036 872L1410 782Q1442 776 1436 802L1062 896Q1030 902 1036 872Z" fill="#3A322C" fill-opacity=".13" transform="translate(8 12)"/>
+          <path d="M1036 872L1410 782Q1442 776 1436 802L1062 896Q1030 902 1036 872Z" fill="#F2EBDD" stroke="#BDAF95" stroke-width="1.6"/>
+          <!-- paste pot and brush -->
+          <g transform="translate(300 0)">
+            <ellipse cx="380" cy="796" rx="78" ry="12" fill="url(#pool)"/>
+            <path d="M326 724V786Q380 806 434 786V724Z" fill="#D7CAB0" stroke="#A8987B" stroke-width="1.4"/>
+            <ellipse cx="380" cy="724" rx="54" ry="14" fill="#F7F2E6" stroke="#A8987B" stroke-width="1.4"/>
+          </g>
+          <g transform="rotate(-15 470 860)">
+            <rect x="214" y="852" width="250" height="16" rx="8" fill="#3A2E26"/>
+            <rect x="462" y="848" width="34" height="24" rx="3" fill="#9C8F79"/>
+            <path d="M496 846C534 842 560 852 568 860C560 868 534 878 496 874Z" fill="#C2A574"/>
+          </g>
+          <!-- plate rules -->
+          <rect x="40" y="40" width="1520" height="920" fill="none" stroke="#3A322C" stroke-opacity=".2" stroke-width="1.5"/>
+          <rect x="54" y="54" width="1492" height="892" fill="none" stroke="#3A322C" stroke-opacity=".1"/>
+        </svg>
+      </div>
+      <div class="grade" aria-hidden="true"></div>
+      <div class="marks" aria-hidden="true"><span class="reg r1"></span><span class="reg r2"></span><span class="cap">Pl. I · Spine, lifted for resewing</span></div>
+    </div>
+
+    <div class="headline">
+      <p class="eyebrow">Book restoration · Bench notes</p>
+      <h1 id="h-hero" aria-label="Every book can be bound again.">
+        <span class="ln" aria-hidden="true"><span class="wd" style="--i:0">Every</span> <span class="wd" style="--i:1">book</span> <span class="wd" style="--i:2">can</span> <span class="wd" style="--i:3">be</span></span>
+        <span class="ln" aria-hidden="true"><span class="wd" style="--i:4">bound</span> <span class="wd" style="--i:5"><em>again.</em></span></span>
+      </h1>
+      <p class="lead">We repair the bindings people tell us are finished: resewn on their original stations, relined, and closed again in the cloth they came in.</p>
+      <p class="cue"><i aria-hidden="true"></i>Scroll to the bench</p>
+    </div>
+
+    <article class="sheet" aria-labelledby="h-repair">
+      <p class="eyebrow reveal e1">I · The repair</p>
+      <h2 id="h-repair" class="reveal e2">We keep the binding the book <em>already has.</em></h2>
+      <div class="rule reveal e3" aria-hidden="true"></div>
+      <p class="reveal e3">Most bindings fail at the spine. The thread rots, the glue lets go, the cloth splits along the joint. We lift the old cloth, resew the text block on the stations it was first sewn on, line it in linen, and lay the original cloth back down. The book should look like itself, only able to open again.</p>
+      <ul class="reveal e4">
+        <li>Resewn on the original stations</li>
+        <li>Linen mull, wheat-starch paste</li>
+        <li>Spine cloth relaid, not replaced</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="chapter" aria-labelledby="h-bench">
+  <p class="eyebrow">II · On the bench</p>
+  <h2 id="h-bench">Books with a life <em>already in them.</em></h2>
+  <p class="lead">We take the books other binders send back: the ones that matter more than they are worth.</p>
+  <div class="cards">
+    <article class="card reveal"><span class="n">CLOTH · LEATHER</span><h3>Bindings that split</h3><p>Broken joints, detached boards, spines worn through at the head. Relined, reattached and consolidated, never rebacked in new material unless you ask.</p></article>
+    <article class="card reveal"><span class="n">BIBLES · LEDGERS</span><h3>Heavy family books</h3><p>Large text blocks with loose sections and handwritten pages. We do not trim, wash or flatten what someone wrote in the margins.</p></article>
+    <article class="card reveal"><span class="n">PAPERBACKS</span><h3>The one read to pieces</h3><p>Rebound in a plain cloth case with the original cover tipped in, so it can be read to pieces again.</p></article>
+  </div>
+</section>
+
+<section class="chapter send" id="send" aria-labelledby="h-send">
+  <p class="eyebrow">III · Sending a book</p>
+  <h2 id="h-send">Three steps, <em>no cutting</em> until you agree.</h2>
+  <ol class="steps">
+    <li class="reveal"><div><strong>Wrap it in clean paper, not plastic.</strong><span>Paper lets the book breathe in transit; plastic traps damp.</span></div></li>
+    <li class="reveal"><div><strong>Post it with a note about what it means to you.</strong><span>It changes what we keep. An inscription is not damage.</span></div></li>
+    <li class="reveal"><div><strong>We write back with a quote before any work begins.</strong><span>Photographs of the binding as it arrived, and what we propose to do.</span></div></li>
+  </ol>
+  <a class="button" href="mailto:bench@quireandthread.example?subject=A%20book%20for%20the%20bench">Write to the bench</a>
+</section>
+</main>
+
+<footer>
+  <span>Quire &amp; Thread is a fictional bindery: the worked example from chapter 6 of <em>The Cinematic Web</em>.</span>
+  <a href="https://github.com/MustBeSimo/the-cinematic-web">Source · MIT</a>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var root=document.documentElement;
+  root.classList.add('js');
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  var desk=matchMedia('(hover: hover) and (pointer: fine) and (min-width: 768px)');
+  var hero=document.querySelector('[data-track]');
+  var plate=hero.querySelector('.plate');
+  var sheetItems=hero.querySelectorAll('.sheet .reveal');
+  var mode='static', ticking=false, raf=0, top0=0, range=1, vh=innerHeight, cur=0;
+
+  function clamp(v){return v<0?0:v>1?1:v;}
+  // layout reads happen here only: on init, mode change and resize, never per frame
+  function measure(){vh=innerHeight;top0=hero.getBoundingClientRect().top+scrollY;range=Math.max(1,hero.offsetHeight-vh);}
+  function request(){if(!ticking){ticking=true;raf=requestAnimationFrame(frame);}}
+
+  // one rAF-throttled scroll clock drives everything
+  function frame(){
+    ticking=false;
+    if(scrollY>8){root.classList.add('scrolled');}
+    if(mode==='static'){return;}
+    var max=root.scrollHeight-vh;
+    root.style.setProperty('--scroll',clamp(max>0?scrollY/max:0).toFixed(4));
+    if(mode==='pin'){
+      hero.style.setProperty('--p',clamp((scrollY-top0)/range).toFixed(4));
+    } else {
+      // HANDHELD DRIFT (touch): one lerped, transform-only parallax mover on the plate
+      var target=Math.min(vh,Math.max(0,scrollY-top0))*0.16;
+      cur+=(target-cur)*0.14;
+      plate.style.transform='translate3d(0,'+cur.toFixed(2)+'px,0)';
+      if(Math.abs(target-cur)>0.25){request();}
+    }
+  }
+
+  function setMode(){
+    mode=reduce.matches?'static':(desk.matches?'pin':'touch');
+    root.classList.toggle('is-pinned',mode==='pin');
+    root.classList.toggle('is-touch',mode==='touch');
+    if(mode!=='touch'){plate.style.transform='';cur=0;}
+    if(mode!=='pin'){hero.style.removeProperty('--p');}
+    if(mode==='pin'){for(var i=0;i<sheetItems.length;i++){sheetItems[i].classList.add('in');}}
+    measure();request();
+  }
+
+  // in-flow reveals: hidden state only exists once this script has proved it can show them
+  var items=document.querySelectorAll('.reveal');
+  if(!reduce.matches && 'IntersectionObserver' in window){
+    root.classList.add('js-reveal');
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+    },{threshold:.2,rootMargin:'0px 0px -6% 0px'});
+    Array.prototype.forEach.call(items,function(el,i){
+      if(el.closest('.cards')||el.closest('.steps')){el.style.transitionDelay=((i%3)*110)+'ms';}
+      io.observe(el);
+    });
+  }
+
+  [reduce,desk].forEach(function(m){(m.addEventListener?m.addEventListener('change',setMode):m.addListener(setMode));});
+  addEventListener('scroll',request,{passive:true});
+  addEventListener('resize',function(){measure();request();});
+  addEventListener('load',function(){measure();request();});
+  addEventListener('pagehide',function(){cancelAnimationFrame(raf);});
+  setMode();
+})();
+</script>
+</body>
+</html>
